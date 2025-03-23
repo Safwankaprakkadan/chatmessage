@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:lilactest/api_service.dart';
@@ -11,8 +10,7 @@ class PhoneLoginScreen extends StatefulWidget {
 
 class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
   final TextEditingController phoneController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  String countryCode = "+91"; // Default country code
+  String countryCode = "+91";
 
   void sendOtp() async {
     String fullPhoneNumber = "$countryCode${phoneController.text}";
@@ -39,25 +37,41 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
         child: Column(
           children: [
             Text(
-              "Enter your phone number",
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              "Enter your phone \n number",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 30),
             IntlPhoneField(
               controller: phoneController,
               decoration: InputDecoration(
                 labelText: 'Enter phone number',
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: Colors.grey),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: Colors.grey),
+                ),
               ),
               initialCountryCode: 'IN',
               onChanged: (phone) {
                 setState(() {
-                  countryCode = phone.countryCode; // Update country code
+                  countryCode = phone.countryCode;
                 });
                 print("Full Number: ${phone.completeNumber}");
               },
             ),
-            Text('Fliq will send you a verification code'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text('Fliq will send you a text with a verification code.'),
+              ],
+            ),
             Spacer(),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),

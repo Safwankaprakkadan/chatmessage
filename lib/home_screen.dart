@@ -9,28 +9,27 @@ class HomeScreen extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           Image.asset(
-            "assets/images/datingImage.jpg",
+            "assets/images/dateAppbg.png",
             fit: BoxFit.cover,
           ),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Spacer(),
-              // Image.asset("assets/images/logo.png", height: 60),
-              SizedBox(height: 20),
+              SizedBox(height: 60),
+              Image.asset("assets/images/images.png", height: 60),
               Text(
                 "Connect. Meet. Love.\nWith Fliq Dating",
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
               ),
               Spacer(),
-              _buildLoginButton("Sign in with Google", Colors.black, "google", context),
-              _buildLoginButton("Sign in with Facebook", Colors.blue, "facebook", context),
-              _buildLoginButton("Sign in with phone number", Colors.orange, "phone", context),
+              _buildLoginButton("Sign in with Google", Colors.white, "google", context),
+              _buildLoginButton("Sign in with Facebook", const Color.fromARGB(255, 43, 84, 132), "facebook", context),
+              _buildLoginButton("Sign in with phone number", Colors.pink, "phone", context),
               Padding(
                 padding: EdgeInsets.all(10.0),
                 child: Text(
-                  "By signing up, you agree to our Terms & Privacy Policy.",
+                  "By signing up, you agree to our Terms. See how we use your data in our Privacy Policy.",
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 12, color: Colors.white70),
                 ),
@@ -64,9 +63,21 @@ class HomeScreen extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(method == "google" ? Icons.g_mobiledata : method == "facebook" ? Icons.facebook : Icons.phone, color: Colors.white),
+            if (method == "google")
+              Image.asset(
+                "assets/images/google.png", 
+                height: 24,
+                width: 24,
+              ),
+              Image.asset(
+                method == "facebook"
+                    ? "assets/images/Facebook_logo.png"
+                    : "assets/images/phone.png", 
+                height: 24,
+                width: 24,
+              ),
             SizedBox(width: 10),
-            Text(text, style: TextStyle(fontSize: 16, color: Colors.white)),
+            Text(text, style: TextStyle(fontSize: 16, color: method == "google" ? Colors.black : Colors.white)),
           ],
         ),
       ),

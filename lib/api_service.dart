@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:japx/japx.dart';
 
@@ -30,9 +31,6 @@ class ApiService {
       body: jsonEncode(requestData),
     );
 
-    print("Response Status Code: ${response.statusCode}");
-    print("Response Body: ${response.body}");
-
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
 
@@ -47,28 +45,30 @@ class ApiService {
   }
 
   /// Verify OTP
- static Future<String?> verifyOtp(String phone, String otp) async {
-    final url = Uri.parse("${baseUrl}/auth/registration-otp-codes/actions/phone/verify-otp");
+  static Future<String?> verifyOtp(String phone, String otp) async {
+    final url = Uri.parse(
+      "${baseUrl}/auth/registration-otp-codes/actions/phone/verify-otp",
+    );
 
     final Map<String, dynamic> requestData = {
-       "data": {
-       "type": "registration_otp_codes",
-       "attributes": {
-           "phone": phone,
-           "otp": 111111,
-           "device_meta": {
-               "type": "web",
-               "name": "HP Pavilion 14-EP0068TU",
-               "os": "Linux x86_64",
-               "browser": "Mozilla Firefox Snap for Ubuntu (64-bit)",
-               "browser_version": "112.0.2",
-               "user_agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/112.0",
-               "screen_resolution": "1600x900",
-               "language": "en-GB"
-           }
-       }
-   }
-
+      "data": {
+        "type": "registration_otp_codes",
+        "attributes": {
+          "phone": phone,
+          "otp": 111111,
+          "device_meta": {
+            "type": "web",
+            "name": "HP Pavilion 14-EP0068TU",
+            "os": "Linux x86_64",
+            "browser": "Mozilla Firefox Snap for Ubuntu (64-bit)",
+            "browser_version": "112.0.2",
+            "user_agent":
+                "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/112.0",
+            "screen_resolution": "1600x900",
+            "language": "en-GB",
+          },
+        },
+      },
     };
 
     try {
@@ -81,48 +81,72 @@ class ApiService {
         body: jsonEncode(requestData),
       );
 
-      print("Response Status Code: ${response.statusCode}");
-      print("Response Body: ${response.body}");
-
       final jsonResponse = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-      
-        String? token = jsonResponse['token'];
-        return token;  // Return the token
+        final String? token =
+            jsonResponse['data']['attributes']['auth_status']['access_token'];
+        if (token != null) {
+          return token;
+        } else {
+          print("Token not found in the response");
+          return null;
+        }
       } else {
-        throw Exception("OTP verification failed: ${jsonResponse['message'] ?? 'Unknown error'}");
+        print("Failed to verify OTP. Status Code: ${response.statusCode}");
+        print("Error Response: ${response.body}");
+        return null;
       }
     } catch (e) {
-      print("Error verifying OTP: $e");
-      throw Exception("Failed to verify OTP");
+      print("Error during OTP verification: $e");
+      return null;
     }
   }
+
   /// Get Chat List
-  static Future<List<dynamic>> getChatList() async {
+  static Future<List<dynamic>> getChatList(String token) async {
     final url = Uri.parse("$baseUrl/chat/chat-messages/queries/contact-users");
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          HttpHeaders.authorizationHeader: 'Bearer $token',
+        },
+      );
 
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-      final decodedData = Japx.decode(jsonResponse);
-      return decodedData['data'];
-    } else {
-      throw Exception("Failed to load chat list");
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        final decodedData = Japx.decode(data);
+        return decodedData['data'];
+      } else {
+        throw Exception(
+          "Failed to load chat list. Status code: ${response.statusCode}",
+        );
+      }
+    } catch (error) {
+      print("Error fetching chat list: $error");
+      rethrow;
     }
   }
 
   /// Get Chat Between Users
   static Future<List<dynamic>> getChatBetweenUsers(
-    String senderId,
+    int senderId,
     String receiverId,
+    String token,
   ) async {
     final url = Uri.parse(
       "$baseUrl/chat/chat-messages/queries/chat-between-users/$senderId/$receiverId",
     );
 
-    final response = await http.get(url);
+    final response = await http.get(url,
+    headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          HttpHeaders.authorizationHeader: 'Bearer $token',
+        },);
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
